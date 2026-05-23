@@ -10,16 +10,17 @@
 
 from typing import List
 from core.bitboard import Board
-from core.constants import RANK_2, RANK_7
-from core.constants import A1, B1, C1, D1, E1, F1, G1, H1, A8, B8, C8, D8, E8, F8, G8, H8
-from core.constants import get_from_square, get_to_square, get_flag, encode_move
-from core.constants import FLAG_CAPTURE, FLAG_DOUBLE_PUSH, FLAG_EP_CAPTURE, FLAG_LONG_CASTLE, FLAG_PROMOTE_BISHOP,\
-                           FLAG_PROMOTE_BISHOP_CAPTURE, FLAG_PROMOTE_KNIGHT, FLAG_PROMOTE_KNIGHT_CAPTURE, FLAG_PROMOTE_QUEEN,\
-                           FLAG_PROMOTE_QUEEN_CAPTURE, FLAG_PROMOTE_ROOK, FLAG_PROMOTE_ROOK_CAPTURE, FLAG_QUIET, FLAG_SHORT_CASTLE,\
-                           WHITE_SHORT_RIGHT, WHITE_LONG_RIGHT, BLACK_SHORT_RIGHT, BLACK_LONG_RIGHT,\
-                           WHITE_SHORT_EMPTY_MASK, WHITE_LONG_EMPTY_MASK, BLACK_SHORT_EMPTY_MASK, BLACK_LONG_EMPTY_MASK
-from core.constants import RANK_1,RANK_2,RANK_3,RANK_4,RANK_5,RANK_6,RANK_7,RANK_8,\
-                           FILE_A,FILE_B,FILE_D,FILE_E,FILE_F,FILE_G,FILE_H
+from core.constants import C1, D1, E1, F1, G1, C8, D8, E8, F8, G8
+from core.constants import encode_move
+from core.constants import (
+    FLAG_CAPTURE, FLAG_DOUBLE_PUSH, FLAG_EP_CAPTURE, FLAG_LONG_CASTLE, FLAG_PROMOTE_BISHOP, FLAG_PROMOTE_BISHOP_CAPTURE,
+    FLAG_PROMOTE_KNIGHT, FLAG_PROMOTE_KNIGHT_CAPTURE, FLAG_PROMOTE_QUEEN, FLAG_PROMOTE_QUEEN_CAPTURE, FLAG_PROMOTE_ROOK,
+    FLAG_PROMOTE_ROOK_CAPTURE, FLAG_QUIET, FLAG_SHORT_CASTLE, WHITE_SHORT_RIGHT, WHITE_LONG_RIGHT, BLACK_SHORT_RIGHT,
+    BLACK_LONG_RIGHT, WHITE_SHORT_EMPTY_MASK, WHITE_LONG_EMPTY_MASK, BLACK_SHORT_EMPTY_MASK, BLACK_LONG_EMPTY_MASK
+                            )
+from core.constants import (
+    RANK_1,RANK_4,RANK_5,RANK_8,FILE_A,FILE_B,FILE_G,FILE_H
+                            )
 from core.constants import MASK_64
 from core.magic import get_bishop_attacks, get_rook_attacks
 
@@ -51,7 +52,7 @@ def _precompute_knight_attacks() -> List[int]:
     for square in range(64):
         knight = 1 << square
         
-        # Calculate the math (THIS IS THE ONLY TIME WE DO MATH)
+        # Calculate the math
         uul = (knight << 15) & ~FILE_H & MASK_64
         uur = (knight << 17) & ~FILE_A & MASK_64
         ull = (knight << 6)  & ~FILE_H & ~FILE_G & MASK_64
@@ -140,19 +141,30 @@ def get_white_pawn_moves(board: Board) -> List[int]:
     while temp_lefts:
         to_square = (temp_lefts & -temp_lefts).bit_length() - 1
         from_square = to_square - 7
-        moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
+        if (1 << to_square) & RANK_8:
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_QUEEN_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_ROOK_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_BISHOP_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_KNIGHT_CAPTURE))
+        else:
+            moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
         temp_lefts &= temp_lefts - 1
 
     temp_rights = right_captures
     while temp_rights:
         to_square = (temp_rights & -temp_rights).bit_length() - 1
         from_square = to_square - 9
-        moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
+        if (1 << to_square) & RANK_8:
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_QUEEN_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_ROOK_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_BISHOP_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_KNIGHT_CAPTURE))
+        else:
+            moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
         temp_rights &= temp_rights - 1
     
     if board.en_passant_square:
         ep_sq = board.en_passant_square
-        # Which white pawns can attack the en passant square?
         ep_attackers = BLACK_PAWN_ATTACK_TABLE[ep_sq] & board.white_pawns
         temp_ep = ep_attackers
         while temp_ep:
@@ -173,7 +185,6 @@ def get_black_pawn_moves(board: Board) -> List[int]:
     double_pushes  = (single_pushes >> 8) & empty_squares & RANK_5
     left_captures  = (board.black_pawns >> 9) & board.white_pieces & ~FILE_H
     right_captures = (board.black_pawns >> 7) & board.white_pieces & ~FILE_A
-    en_passants = None # TODO
 
     temp_singles = single_pushes
     while temp_singles:
@@ -201,20 +212,31 @@ def get_black_pawn_moves(board: Board) -> List[int]:
     while temp_lefts:
         to_square = (temp_lefts & -temp_lefts).bit_length() - 1
         from_square = to_square + 9
-        moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
+        if (1 << to_square) & RANK_1:
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_QUEEN_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_ROOK_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_BISHOP_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_KNIGHT_CAPTURE))
+        else:
+            moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
         temp_lefts &= temp_lefts - 1
 
     temp_rights = right_captures
     while temp_rights:
         to_square = (temp_rights & -temp_rights).bit_length() - 1
         from_square = to_square + 7
-        moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
+        if (1 << to_square) & RANK_1:
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_QUEEN_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_ROOK_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_BISHOP_CAPTURE))
+            moves.append(encode_move(from_square, to_square, FLAG_PROMOTE_KNIGHT_CAPTURE))
+        else:
+            moves.append(encode_move(from_square, to_square, FLAG_CAPTURE))
         temp_rights &= temp_rights - 1
     
     if board.en_passant_square:
         ep_sq = board.en_passant_square
-        # Which white pawns can attack the en passant square?
-        ep_attackers = WHITE_PAWN_ATTACK_TABLE[ep_sq] & board.white_pawns
+        ep_attackers = WHITE_PAWN_ATTACK_TABLE[ep_sq] & board.black_pawns
         temp_ep = ep_attackers
         while temp_ep:
             from_square = (temp_ep & -temp_ep).bit_length() - 1
@@ -246,7 +268,7 @@ def get_knight_moves(knights_board: int, friendlies:int, all_pieces: int) -> Lis
             # Check if this destination holds an enemy piece (Capture) or is empty (Quiet)
             flag = FLAG_CAPTURE if (all_pieces & (1 << to_square)) else FLAG_QUIET
             
-            # Pack it into our 16-bit move integer and append
+            # Pack it into 16-bit move integer and append
             moves.append(encode_move(from_square, to_square, flag))
             
             # Clear the least significant bit to move to the next destination

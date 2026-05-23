@@ -13,6 +13,7 @@ from core.constants import FLAG_CAPTURE, FLAG_DOUBLE_PUSH, FLAG_EP_CAPTURE, FLAG
                            FLAG_PROMOTE_BISHOP_CAPTURE, FLAG_PROMOTE_KNIGHT, FLAG_PROMOTE_KNIGHT_CAPTURE, FLAG_PROMOTE_QUEEN,\
                            FLAG_PROMOTE_QUEEN_CAPTURE, FLAG_PROMOTE_ROOK, FLAG_PROMOTE_ROOK_CAPTURE, FLAG_QUIET, FLAG_SHORT_CASTLE,\
                            WHITE_SHORT_RIGHT, WHITE_LONG_RIGHT, BLACK_SHORT_RIGHT, BLACK_LONG_RIGHT
+from core.zobrist import compute_hash, update_hash
 
 """
 Representing Squares:
@@ -21,7 +22,6 @@ To flip D6 to 1, we use its representation, 2^{43} = 0x80000000000 (0x meaning h
 """
 
 class Board:
-
     def __init__(self):
         # White pieces initialization
         self.white_pawns   = 0
@@ -48,6 +48,8 @@ class Board:
         self.history = []
         self.en_passant_square = None
         self.castling_rights = 0b1111
+
+        self.zobrist_hash = 0
     
     def set_starting_position(self):
         """
@@ -61,13 +63,14 @@ class Board:
         self.white_king    = (1 << E1)
 
         self.black_pawns   = RANK_7
-        self.black_knights = (1 << B8) | (1 < G8)
-        self.black_bishops = (1 << C8) | (1 < F8)
+        self.black_knights = (1 << B8) | (1 << G8)
+        self.black_bishops = (1 << C8) | (1 << F8)
         self.black_rooks   = (1 << A8) | (1 << H8)
         self.black_queens  = (1 << D8)
         self.black_king    = (1 << E8)
 
         self.update_summary_boards()
+        self.zobrist_hash = compute_hash(self)
 
     def update_summary_boards(self):
         """
@@ -141,8 +144,11 @@ class Board:
                 'castling_rights':    self.castling_rights,
                 'en_passant_square':  self.en_passant_square,
                 'white_to_move':      self.white_to_move,
+                'zobrist_hash':  self.zobrist_hash,
             }
             self.history.append(snapshot)
+
+            self.zobrist_hash = update_hash(self.zobrist_hash, move, self)
 
             color, piece = self.get_piece_at(from_sq)
             moving_bb    = f"{color}_{piece}"  # e.g. "white_rooks"
@@ -267,5 +273,7 @@ class Board:
         self.castling_rights   = snapshot['castling_rights']
         self.en_passant_square = snapshot['en_passant_square']
         self.white_to_move     = snapshot['white_to_move']
+
+        self.zobrist_hash  = snapshot['zobrist_hash']
 
         self.update_summary_boards()

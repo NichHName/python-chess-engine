@@ -14,7 +14,7 @@ and more. This is a work-in-progress.
 ## Current Workflow
 
 ### Phase 1: The Game (In Progress)
-1) bitboard -> move_gen 
+1) constants -> bitboard -> magic -> move_gen -> zobrist
 2) Benchmark move_gen w/ depth 5, 6, 7, 8
 
 ### Phase 2: Searching (Incomplete)
