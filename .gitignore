@@ -3,3 +3,4 @@ evaluator/
 search/
 main.py
 __pycache__/
+*.pgn

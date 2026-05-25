@@ -48,6 +48,7 @@ class Board:
         self.history = []
         self.en_passant_square = None
         self.castling_rights = 0b1111
+        self.repetition_table = {}
 
         self.zobrist_hash = 0
     
@@ -71,6 +72,7 @@ class Board:
 
         self.update_summary_boards()
         self.zobrist_hash = compute_hash(self)
+        self.repetition_table[self.zobrist_hash] = 1
 
     def update_summary_boards(self):
         """
@@ -149,6 +151,8 @@ class Board:
             self.history.append(snapshot)
 
             self.zobrist_hash = update_hash(self.zobrist_hash, move, self)
+
+            self.repetition_table[self.zobrist_hash] = self.repetition_table.get(self.zobrist_hash, 0) + 1
 
             color, piece = self.get_piece_at(from_sq)
             moving_bb    = f"{color}_{piece}"  # e.g. "white_rooks"
@@ -257,6 +261,11 @@ class Board:
     def unmake_move(self, move: int):
         snapshot = self.history.pop()
 
+        post_move_hash = self.zobrist_hash
+        self.repetition_table[post_move_hash] -= 1
+        if self.repetition_table[post_move_hash] == 0:
+            del self.repetition_table[post_move_hash]
+
         self.white_pawns   = snapshot['white_pawns']
         self.white_knights = snapshot['white_knights']
         self.white_bishops = snapshot['white_bishops']
@@ -277,3 +286,81 @@ class Board:
         self.zobrist_hash  = snapshot['zobrist_hash']
 
         self.update_summary_boards()
+    
+    def load_fen(self, fen: str):
+        """
+        Loads a position from a FEN string.
+        FEN format: piece_placement side_to_move castling ep_square halfmove fullmove
+        Example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+        """
+        # Reset all bitboards
+        self.white_pawns = self.white_knights = self.white_bishops = 0
+        self.white_rooks = self.white_queens  = self.white_king    = 0
+        self.black_pawns = self.black_knights = self.black_bishops = 0
+        self.black_rooks = self.black_queens  = self.black_king    = 0
+        self.castling_rights   = 0
+        self.en_passant_square = None
+        self.history           = []
+        self.repetition_table  = {}
+
+        parts = fen.strip().split()
+        piece_placement = parts[0]
+        side_to_move    = parts[1]
+        castling        = parts[2]
+        ep_square       = parts[3]
+
+        # =========================================================
+        # Piece placement
+        # FEN ranks go from rank 8 (top) to rank 1 (bottom)
+        # =========================================================
+        piece_map = {
+            'P': 'white_pawns',   'p': 'black_pawns',
+            'N': 'white_knights', 'n': 'black_knights',
+            'B': 'white_bishops', 'b': 'black_bishops',
+            'R': 'white_rooks',   'r': 'black_rooks',
+            'Q': 'white_queens',  'q': 'black_queens',
+            'K': 'white_king',    'k': 'black_king',
+        }
+
+        rank = 7  # start at rank 8 (index 7)
+        file = 0
+
+        for char in piece_placement:
+            if char == '/':
+                rank -= 1
+                file  = 0
+            elif char.isdigit():
+                file += int(char)
+            else:
+                square = rank * 8 + file
+                attr   = piece_map[char]
+                setattr(self, attr, getattr(self, attr) | (1 << square))
+                file += 1
+
+        # =========================================================
+        # Side to move
+        # =========================================================
+        self.white_to_move = (side_to_move == 'w')
+
+        # =========================================================
+        # Castling rights
+        # =========================================================
+        if 'K' in castling: self.castling_rights |= WHITE_SHORT_RIGHT
+        if 'Q' in castling: self.castling_rights |= WHITE_LONG_RIGHT
+        if 'k' in castling: self.castling_rights |= BLACK_SHORT_RIGHT
+        if 'q' in castling: self.castling_rights |= BLACK_LONG_RIGHT
+
+        # =========================================================
+        # En passant square
+        # =========================================================
+        if ep_square != '-':
+            file = ord(ep_square[0]) - ord('a')
+            rank = int(ep_square[1]) - 1
+            self.en_passant_square = rank * 8 + file
+
+        # =========================================================
+        # Update summary boards and Zobrist hash
+        # =========================================================
+        self.update_summary_boards()
+        self.zobrist_hash = compute_hash(self)
+        self.repetition_table[self.zobrist_hash] = 1

@@ -16,20 +16,20 @@ Work will be released in chunks (mostly corresponding to the timeline below). At
 ### Phase 1: The Game (Complete)
 1) constants -> bitboard -> magic -> move_gen -> zobrist
 2) Benchmark move_gen w/ depth 3, 4, 5 (using `perft.py` to ensure all moves are correctly identified)
+3) Complete zobrist hashing
 
-### Phase 2: Searching (In-Progress)
-3) minimax using move_gen and a temporary naive piece-value evaluator function
-4) Pruning logic
+### Phase 2: Searching (Complete)
+4) minimax using move_gen and a temporary naive piece-value evaluator function
+5) Pruning logic
 
-### Phase 3: Learning (Incomplete)
-5) base_layers -> loss_optim (Linear layers, ReLU, MSE/proprietary loss?)
-6) Train on sine-wave fitting to test gradient loss convergence
+### Phase 3: Learning (In-Progress)
+6) base_layers -> loss_optim (Linear layers, ReLU, MSE/proprietary loss?)
+7) Train on sine-wave fitting to test gradient loss convergence
 
 ### Phase 4: Training (Incomplete)
-7) pgn_parser (gather data, vectorization)
-8) Train on new data
+8) pgn_parser (gather data, vectorization)
+9) Train on new data
 
 ### Phase 5: Implementation (Incomplete)
-9) Replace material counter in minimax with forward pass of trained NN
-10) Implement zobrist
+10) Replace material counter in minimax with forward pass of trained NN
 11) Add transposition tables
