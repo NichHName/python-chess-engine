@@ -20,6 +20,7 @@ from core.constants import (
 )
 from core.move_gen import get_all_legal_moves, is_square_attacked
 from search.minimax import get_best_move
+from data.pgn_parser import load_pgn_training_data
 
 # =========================================================
 # Configuration

@@ -1,6 +1,7 @@
 data/
-evaluator/
-search/
-main.py
 __pycache__/
 *.pgn
+loss_optim.py
+network.py
+train.py
+transposition.py

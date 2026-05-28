@@ -24,12 +24,13 @@ Work will be released in chunks (mostly corresponding to the timeline below). At
 
 ### Phase 3: Learning (In-Progress)
 6) base_layers -> loss_optim (Linear layers, ReLU, MSE/proprietary loss?)
-7) Train on sine-wave fitting to test gradient loss convergence
+7) network -> train
+8) Train on sine-wave fitting to test gradient loss convergence
 
 ### Phase 4: Training (Incomplete)
-8) pgn_parser (gather data, vectorization)
-9) Train on new data
+9) pgn_parser (gather data, vectorization)
+10) Train on new data
 
 ### Phase 5: Implementation (Incomplete)
-10) Replace material counter in minimax with forward pass of trained NN
-11) Add transposition tables
+11) Replace material counter in minimax with forward pass of trained NN
+12) Add transposition tables
