@@ -10,21 +10,21 @@
 
 from core.bitboard import Board
 
-# =========================================================
+# ====================================================
 # Piece values (centipawns)
-# =========================================================
+# ====================================================
 PAWN_VALUE   = 100
 KNIGHT_VALUE = 320
 BISHOP_VALUE = 330
 ROOK_VALUE   = 500
 QUEEN_VALUE  = 900
 
-# =========================================================
+# ====================================================
 # Piece-square tables
 # Each table is from white's perspective, rank 1 to rank 8
 # (index 0 = A1, index 63 = H8)
 # These provide positional bonuses/penalties on top of material
-# =========================================================
+# ====================================================
 PAWN_TABLE = [
      0,  0,  0,  0,  0,  0,  0,  0,
     50, 50, 50, 50, 50, 50, 50, 50,
@@ -91,9 +91,9 @@ KING_MIDDLE_TABLE = [
      20, 30, 10,  0,  0, 10, 30, 20,
 ]
 
-# =========================================================
+# ====================================================
 # Helpers
-# =========================================================
+# ====================================================
 def _popcount(bb: int) -> int:
     return bin(bb).count('1')
 
@@ -117,9 +117,9 @@ def _evaluate_piece_square(bb: int, table: list, is_black: bool) -> int:
         temp &= temp - 1
     return score
 
-# =========================================================
+# ====================================================
 # Material counting
-# =========================================================
+# ====================================================
 def count_material(board: Board) -> int:
     """
     Returns raw material balance from white's perspective.
@@ -144,9 +144,9 @@ def count_material(board: Board) -> int:
 
     return white_material - black_material
 
-# =========================================================
+# ====================================================
 # Positional evaluation
-# =========================================================
+# ====================================================
 def _evaluate_position(board: Board) -> int:
     """
     Returns positional score from white's perspective using
@@ -172,9 +172,9 @@ def _evaluate_position(board: Board) -> int:
 
     return score
 
-# =========================================================
+# ====================================================
 # Top-level evaluation function
-# =========================================================
+# ====================================================
 def evaluate(board: Board) -> int:
     """
     Returns a score from white's perspective.

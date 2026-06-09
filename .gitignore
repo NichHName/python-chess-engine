@@ -1,7 +1,6 @@
-data/
 __pycache__/
-*.pgn
-loss_optim.py
-network.py
-train.py
+models/
+first_game.pgn
+game.pgn
+romeo_dies.pgn
 transposition.py

@@ -17,6 +17,14 @@ from core.constants import (
 )
 from evaluator.base_layers import evaluate
 from evaluator.move_ordering import order_moves
+from evaluator.train import load_network_for_engine, network_evaluate
+from evaluator.eval_router import evaluate
+
+_network = load_network_for_engine('models/network')
+
+def get_evaluation(board):
+    net_score = network_evaluate(_network, board)
+    return net_score if net_score is not None else evaluate(board)
 
 # =========================================================
 # Constants

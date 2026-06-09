@@ -121,17 +121,17 @@ class Board:
     def get_bit(self, bitboard, square):
         return bitboard & (1 << square)
     
-    # =========================================================
+    # ====================================================
     # make and unmake moves
-    # =========================================================
+    # ====================================================
     def make_move(self, move: int):
             from_sq = get_from_square(move)
             to_sq   = get_to_square(move)
             flag    = get_flag(move)
 
-            # =========================================================
+            # ====================================================
             # Save snapshot to history stack before changing anything
-            # =========================================================
+            # ====================================================
             snapshot = {
                 'white_pawns':   self.white_pawns,
                 'white_knights': self.white_knights,
@@ -311,10 +311,10 @@ class Board:
         castling        = parts[2]
         ep_square       = parts[3]
 
-        # =========================================================
+        # ====================================================
         # Piece placement
         # FEN ranks go from rank 8 (top) to rank 1 (bottom)
-        # =========================================================
+        # ====================================================
         piece_map = {
             'P': 'white_pawns',   'p': 'black_pawns',
             'N': 'white_knights', 'n': 'black_knights',
@@ -339,30 +339,30 @@ class Board:
                 setattr(self, attr, getattr(self, attr) | (1 << square))
                 file += 1
 
-        # =========================================================
+        # ====================================================
         # Side to move
-        # =========================================================
+        # ====================================================
         self.white_to_move = (side_to_move == 'w')
 
-        # =========================================================
+        # ====================================================
         # Castling rights
-        # =========================================================
+        # ====================================================
         if 'K' in castling: self.castling_rights |= WHITE_SHORT_RIGHT
         if 'Q' in castling: self.castling_rights |= WHITE_LONG_RIGHT
         if 'k' in castling: self.castling_rights |= BLACK_SHORT_RIGHT
         if 'q' in castling: self.castling_rights |= BLACK_LONG_RIGHT
 
-        # =========================================================
+        # ====================================================
         # En passant square
-        # =========================================================
+        # ====================================================
         if ep_square != '-':
             file = ord(ep_square[0]) - ord('a')
             rank = int(ep_square[1]) - 1
             self.en_passant_square = rank * 8 + file
 
-        # =========================================================
+        # ====================================================
         # Update summary boards and Zobrist hash
-        # =========================================================
+        # ====================================================
         self.update_summary_boards()
         self.zobrist_hash = compute_hash(self)
         self.repetition_table[self.zobrist_hash] = 1

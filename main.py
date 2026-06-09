@@ -20,18 +20,17 @@ from core.constants import (
 )
 from core.move_gen import get_all_legal_moves, is_square_attacked
 from search.minimax import get_best_move
-from data.pgn_parser import load_pgn_training_data
 
-# =========================================================
+# ====================================================
 # Configuration
-# =========================================================
+# ====================================================
 SEARCH_DEPTH = 3
 MAX_MOVES    = 55   # prevent infinite games
 OUTPUT_FILE  = "game.pgn"
 
-# =========================================================
+# ====================================================
 # Helpers
-# =========================================================
+# ====================================================
 def square_to_algebraic(square: int) -> str:
     file = 'abcdefgh'[square % 8]
     rank = str((square // 8) + 1)
@@ -99,9 +98,6 @@ def write_pgn(moves_uci: list, result: str, filename: str):
 
     print(f"PGN written to {filename}")
 
-# =========================================================
-# Self-play loop
-# =========================================================
 def self_play():
     board = Board()
     board.set_starting_position()
@@ -231,9 +227,9 @@ def play_engine():
 
             uci = move_to_uci(move)
             if board.white_to_move:
-                print(f"{move_num}. {uci} (score: {score})", end='  ')
+                print(f"{move_num}. {uci} (score: {score:.3f})", end='  ')
             else:
-                print(f"{uci} (score: {score})")
+                print(f"{uci} (score: {score:.3f})")
                 move_num += 1
 
             board.make_move(move)
@@ -294,9 +290,9 @@ def _parse_uci(uci: str, legal_moves: list) -> int:
 
     return None
 
-# =========================================================
+# ====================================================
 # Entry point
-# =========================================================
+# ====================================================
 if __name__ == "__main__":
     print("1. Self-play")
     print("2. Play against engine")
